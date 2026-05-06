@@ -126,7 +126,7 @@ klaus implement --milestone v0.2
 - **No issues dispatched** — Klaus only picks up issues that are open, in the named milestone, labeled `ready-for-agent`, and not labeled `needs-info`. Check with `gh issue list --milestone <name> --label ready-for-agent`.
 - **Stale worktrees** — if Klaus was killed mid-run, `.klaus/worktrees/` may have leftovers. Remove with `git worktree remove .klaus/worktrees/<dir> --force`.
 - **`gh` not authenticated** — `gh auth status`, then `gh auth login`.
-- **`klaus review` posts a `test` stub instead of the real review** — the agent's full review with inline comments hit GitHub's generic 422 (`"An internal error occurred, please try again."`), then it tried to isolate by submitting a body-only probe, which klaus' completion detector then captured as the final review. The most common trigger is anchoring an inline comment in a file that the PR rewrites end-to-end (every original line `-`, every new line `+`); GitHub's diff-position resolver returns the generic 422 instead of a structured field error in that case. **Workaround:** rebase the PR to drop the unrelated full-rewrite commit, or remove inline comments anchored on the rewritten file.
+- **`klaus review` hits GitHub 422 `"An internal error occurred, please try again."`** — most often triggered by an inline comment anchored in a file the PR rewrites end-to-end (every original line `-`, every new line `+`). GitHub's diff-position resolver bails out with a generic 422 instead of a structured field error, even though the `line`/`side` combo is valid. **Workaround:** rebase to drop the full-rewrite commit, or remove inline comments anchored on the rewritten file.
 
 ## Contributing
 

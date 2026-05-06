@@ -10,7 +10,7 @@ Klaus Daimler is a coding agent. He plans the milestone. He implements the issue
 - `klaus implement` — picks issues labeled `ready-for-agent`, dispatches N parallel Claude Code agents into a git worktree per issue, each with its own tmux pane for full visibility and control. Flips the issue label to `ready-for-review` once a PR is open.
 - `klaus review` — picks issues with an open PR labeled `ready-for-review`, runs N Claude Code reviewer agents that each post one `COMMENT` review, and flips the issue to `reviewed-by-agent` for a human to merge.
 
-Named after [Klaus Daimler](https://en.wikipedia.org/wiki/The_Life_Aquatic_with_Steve_Zissou), the honorable first mate of the Belafonte.
+Named after [Klaus Daimler](https://en.wikipedia.org/wiki/The_Life_Aquatic_with_Steve_Zissou), the honorable first mate of the Belafonte. You are the captain. Klaus is your first mate.
 
 ```
 issue: ready-for-agent (handled manually until plan workflow is implemented)
@@ -53,11 +53,11 @@ gh issue create --milestone v0.1 --label ready-for-agent --title "..." --body ".
 klaus implement --milestone v0.1
 ```
 
-Klaus boots a tmux session named `klaus`, prints the plan, and asks `Proceed? [y/N]`. He has read the labels. He has read the blockers. He waits for your nod.
+Klaus boots a tmux session named `klaus`, prints the plan, and asks `Set sail, Captain? [y/N]`. He has read the labels. He has read the blockers. He waits for your orders.
 
 ## Setup
 
-Before the first run, in the target repo:
+Before Klaus sails, in the target repo:
 
 1. Create a **milestone** matching the `--milestone` name you'll pass.
 2. Create the **`ready-for-agent`** and **`needs-info`** labels. Klaus auto-creates the two lifecycle labels (`ready-for-review`, `reviewed-by-agent`) himself.
@@ -77,11 +77,11 @@ klaus review    --milestone <name> [--parallel N] [--skip-plan-confirmation]
 | -------------------------- | ------- | ---------------------------------------------------------------------------------- |
 | `--milestone <name>`       | —       | Required. Milestone whose issues Klaus picks up.                                   |
 | `--parallel N`             | `1`     | Dispatch up to N agents concurrently.                                              |
-| `--skip-plan-confirmation` | `false` | Skip the interactive `Proceed? [y/N]` Klaus shows after the plan is printed.       |
+| `--skip-plan-confirmation` | `false` | Skip the interactive `Set sail, Captain? [y/N]` Klaus shows after the plan is printed. |
 
 Both commands boot a tmux session named `klaus` with a `controller` window (live log) and an `agents` window (one tiled pane per active worktree). `Ctrl-b 0` returns to the controller; `Ctrl-b 1` jumps to agents.
 
-> **Cost:** `--parallel N` runs N concurrent Claude Code sessions against your API key. Start with the default before turning it up.
+> **Cost:** `--parallel N` runs N concurrent Claude Code sessions against your API key. Start with the default before turning it up, Captain.
 
 ### Issue body convention
 

@@ -82,7 +82,7 @@ export async function runReviewerWorkflow(
   const issues = listMilestoneIssues(milestone, READY_FOR_REVIEW);
   if (issues.length === 0) {
     process.stdout.write(
-      `klaus reviewer: no open issues in milestone '${milestone}' with label '${READY_FOR_REVIEW}'.\n`,
+      `Captain — no issues in milestone '${milestone}' with label '${READY_FOR_REVIEW}'.\n`,
     );
     return { reviewed: [], abandoned: [], skipped: [], errors: [] };
   }
@@ -91,14 +91,14 @@ export async function runReviewerWorkflow(
   printReviewPlan({ milestone, targets: plan.targets, skipped: plan.skipped, parallel });
 
   if (plan.targets.length === 0) {
-    process.stdout.write('klaus reviewer: nothing to review.\n');
+    process.stdout.write('Captain — nothing to review.\n');
     return { reviewed: [], abandoned: [], skipped: plan.skipped, errors: [] };
   }
 
   if (!skipPlanConfirmation) {
-    const proceed = await confirmAtTty('Proceed? [y/N] ');
+    const proceed = await confirmAtTty('Set sail, Captain? [y/N] ');
     if (!proceed) {
-      process.stdout.write('klaus reviewer: aborted.\n');
+      process.stdout.write('Aye, Captain. Standing down.\n');
       return { reviewed: [], abandoned: [], skipped: plan.skipped, errors: [] };
     }
   }
@@ -403,7 +403,7 @@ export function printReviewPlan(args: {
   parallel: number;
 }): void {
   process.stdout.write(
-    `\nklaus review plan (milestone: ${args.milestone}, parallel: ${String(args.parallel)})\n`,
+    `\nOrders, Captain — review plan (milestone: ${args.milestone}, parallel: ${String(args.parallel)})\n`,
   );
   if (args.targets.length > 0) {
     process.stdout.write('  Review:\n');

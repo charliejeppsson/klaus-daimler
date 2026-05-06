@@ -80,7 +80,7 @@ export async function runImplementerWorkflow(
   const issues = listMilestoneIssues(milestone, READY_FOR_AGENT);
   if (issues.length === 0) {
     process.stdout.write(
-      `klaus implementer: no open issues in milestone '${milestone}' with label '${READY_FOR_AGENT}'.\n`,
+      `Captain — no issues in milestone '${milestone}' with label '${READY_FOR_AGENT}'.\n`,
     );
     return { ranIssues: [], errors: [], skipped: [], blocked: [] };
   }
@@ -116,7 +116,7 @@ export async function runImplementerWorkflow(
   printImplementerPlan({ milestone, dispatch, skipped, blocked: plan.blocked, parallel });
 
   if (dispatch.length === 0) {
-    process.stdout.write('klaus implementer: nothing to dispatch.\n');
+    process.stdout.write('Captain — nothing to dispatch.\n');
     return {
       ranIssues: [],
       errors: [],
@@ -126,9 +126,9 @@ export async function runImplementerWorkflow(
   }
 
   if (!skipPlanConfirmation) {
-    const proceed = await confirmAtTty('Proceed? [y/N] ');
+    const proceed = await confirmAtTty('Set sail, Captain? [y/N] ');
     if (!proceed) {
-      process.stdout.write('klaus implementer: aborted.\n');
+      process.stdout.write('Aye, Captain. Standing down.\n');
       return {
         ranIssues: [],
         errors: [],
@@ -454,7 +454,7 @@ export function printImplementerPlan(args: {
   parallel: number;
 }): void {
   process.stdout.write(
-    `\nklaus implementer plan (milestone: ${args.milestone}, parallel: ${String(args.parallel)})\n`,
+    `\nOrders, Captain — implement plan (milestone: ${args.milestone}, parallel: ${String(args.parallel)})\n`,
   );
   if (args.dispatch.length > 0) {
     process.stdout.write('  Dispatch order:\n');
@@ -469,7 +469,7 @@ export function printImplementerPlan(args: {
     }
   }
   if (args.blocked.length > 0) {
-    process.stdout.write('  Blocked (waiting on hard blockers outside this run):\n');
+    process.stdout.write('  Blocked (hard blockers still open):\n');
     for (const b of args.blocked) {
       const waits = b.waitingOn.map((n) => `#${String(n)}`).join(', ');
       process.stdout.write(`    #${String(b.issue.number)} → waiting on ${waits}\n`);

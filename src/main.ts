@@ -32,8 +32,8 @@ const USAGE = `Usage:
   --parallel N:                 dispatch up to N agents concurrently (default 1).
                                 Implementer and reviewer workflows boot a tmux
                                 session '${TMUX_SESSION}' and auto-attach, even when N = 1.
-  --skip-plan-confirmation:     skip the interactive "Proceed? [y/N]" confirmation
-                                shown after the plan is printed.
+  --skip-plan-confirmation:     skip the interactive "Set sail, Captain? [y/N]"
+                                confirmation shown after the plan is printed.
 `;
 
 async function main(): Promise<void> {
@@ -144,7 +144,7 @@ function printImplementerSummary(result: ImplementerWorkflowOutcome): void {
   const opened = result.ranIssues.filter((r) => r.outcome === 'pr-opened').length;
   const abandoned = result.ranIssues.filter((r) => r.outcome === 'abandoned').length;
   process.stdout.write(
-    `\nklaus implementer summary: ${String(ran)} dispatched (${String(opened)} pr-opened, ${String(abandoned)} abandoned), ${String(result.skipped.length)} skipped, ${String(result.blocked.length)} blocked, ${String(result.errors.length)} errored.\n`,
+    `\nKlaus reporting, Captain: ${String(ran)} dispatched (${String(opened)} pr-opened, ${String(abandoned)} abandoned), ${String(result.skipped.length)} skipped, ${String(result.blocked.length)} blocked, ${String(result.errors.length)} errored.\n`,
   );
   if (result.errors.length > 0) {
     process.stdout.write('Errors:\n');
@@ -156,7 +156,7 @@ function printImplementerSummary(result: ImplementerWorkflowOutcome): void {
 
 function printReviewSummary(result: ReviewerWorkflowOutcome): void {
   process.stdout.write(
-    `\nklaus review summary: ${String(result.reviewed.length)} review-posted, ${String(result.abandoned.length)} abandoned, ${String(result.skipped.length)} skipped, ${String(result.errors.length)} errored.\n`,
+    `\nKlaus reporting, Captain: ${String(result.reviewed.length)} review-posted, ${String(result.abandoned.length)} abandoned, ${String(result.skipped.length)} skipped, ${String(result.errors.length)} errored.\n`,
   );
   if (result.errors.length > 0) {
     process.stdout.write('Errors:\n');
@@ -172,9 +172,9 @@ function bootstrapInTmuxAndAttach(repoRoot: string, args: MilestoneWorkflowArgs)
   const has = spawnSync('tmux', ['has-session', '-t', TMUX_SESSION], { stdio: 'ignore' });
   if (has.status === 0) {
     process.stderr.write(
-      `klaus: tmux session '${TMUX_SESSION}' already exists.\n` +
+      `Klaus is already at sea, Captain. Session '${TMUX_SESSION}' is in use.\n` +
         `  attach: tmux attach -t ${TMUX_SESSION}\n` +
-        `  kill:   tmux kill-session -t ${TMUX_SESSION}\n`,
+        `  end:    tmux kill-session -t ${TMUX_SESSION}\n`,
     );
     process.exit(2);
   }

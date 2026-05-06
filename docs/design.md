@@ -236,3 +236,7 @@ Single template, lean by design. The agent runs in a real worktree with full Rea
 **Phase 5 — sandbox klaus to not need any permissions**
 
 **Phase 6 — deploy remotely for AFK usage**
+
+**Phase 7**
+
+- Enable an outer outer loop that triggers implement/refine flow if a PR has comments. Can keep going until reviewer Klaus approves.

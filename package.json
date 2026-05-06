@@ -1,15 +1,15 @@
 {
   "name": "klaus-daimler",
   "version": "0.1.0",
-  "description": "A Ralph Wiggum-style coding agent that drives GitHub issues to PRs end-to-end via Claude Code, git worktrees, and tmux.",
+  "description": "A loyal first mate for your codebase. Plans the milestone, ships a PR for each issue, then reviews them with a crew of parallel agents. Wears a red beanie.",
   "license": "MIT",
   "author": "Charlie Jeppsson",
-  "homepage": "https://github.com/charliejeppsson-/klaus-daimler",
+  "homepage": "https://github.com/charliejeppsson/klaus-daimler",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/charliejeppsson-/klaus-daimler.git"
+    "url": "git+https://github.com/charliejeppsson/klaus-daimler.git"
   },
-  "bugs": "https://github.com/charliejeppsson-/klaus-daimler/issues",
+  "bugs": "https://github.com/charliejeppsson/klaus-daimler/issues",
   "keywords": [
     "claude",
     "claude-code",

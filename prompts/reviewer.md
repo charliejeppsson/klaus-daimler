@@ -58,9 +58,8 @@ Rules:
 - If there are no findings, write `No findings.` immediately after the `Klaus agent review` line and list validation performed.
 - Include at most 10 inline comments.
 - Inline comments are optional; use them only for concrete findings tied to exact changed lines.
-- Inline comments must use changed-file paths and exact diff lines from `gh pr diff`.
-- Use `"side": "RIGHT"` for comments on added or changed lines.
-- If you cannot confidently anchor a finding to a changed line, put it in the summary body instead.
+- Anchor each inline comment to a line that appears with a leading `+` in the unified diff from `gh pr diff {{PR_NUMBER}}` (the new-file side of an addition or modification), and use `"side": "RIGHT"`. Context lines (no prefix) and deletion lines (`-`) are not valid anchors and will cause GitHub to reject the entire review with `422 Unprocessable Entity`. Verify each `path` + `line` against the diff before submitting.
+- If you cannot confidently anchor a finding to a `+` line, put it in the summary body instead.
 - Keep the tone neutral and specific.
 
 # Submit

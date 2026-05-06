@@ -79,6 +79,9 @@ export async function runReviewerWorkflow(
     );
   }
 
+  process.stdout.write(
+    `Spyglass up, Captain — scanning the horizon for review-ready PRs in milestone '${milestone}'...\n`,
+  );
   const issues = listMilestoneIssues(milestone, READY_FOR_REVIEW);
   if (issues.length === 0) {
     process.stdout.write(
@@ -403,7 +406,7 @@ export function printReviewPlan(args: {
   parallel: number;
 }): void {
   process.stdout.write(
-    `\nOrders, Captain — review plan (milestone: ${args.milestone}, parallel: ${String(args.parallel)})\n`,
+    `\nReview plan (milestone: ${args.milestone}, parallel: ${String(args.parallel)})\n`,
   );
   if (args.targets.length > 0) {
     process.stdout.write('  Review:\n');

@@ -75,6 +75,9 @@ export async function runImplementerWorkflow(
     );
   }
 
+  process.stdout.write(
+    `Spyglass up, Captain — scanning the horizon for ready issues in milestone '${milestone}'...\n`,
+  );
   cleanupMergedWorktrees(repoRoot);
 
   const issues = listMilestoneIssues(milestone, READY_FOR_AGENT);
@@ -454,7 +457,7 @@ export function printImplementerPlan(args: {
   parallel: number;
 }): void {
   process.stdout.write(
-    `\nOrders, Captain — implement plan (milestone: ${args.milestone}, parallel: ${String(args.parallel)})\n`,
+    `\nImplement plan (milestone: ${args.milestone}, parallel: ${String(args.parallel)})\n`,
   );
   if (args.dispatch.length > 0) {
     process.stdout.write('  Dispatch order:\n');

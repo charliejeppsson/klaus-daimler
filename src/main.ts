@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -265,8 +265,17 @@ function formatRunSlug(d: Date): string {
 }
 
 function isDirectRun(): boolean {
+  // Node ESM realpath-resolves import.meta.url for the main module but leaves
+  // process.argv[1] as the unresolved path the user invoked. Realpath the entry
+  // so this returns true when klaus is invoked through a symlink — e.g. pnpm's
+  // node_modules/klaus-daimler -> .pnpm/... layout, which is the default.
   const entrypoint = process.argv[1];
-  return entrypoint !== undefined && import.meta.url === pathToFileURL(entrypoint).href;
+  if (entrypoint === undefined) return false;
+  try {
+    return import.meta.url === pathToFileURL(realpathSync(entrypoint)).href;
+  } catch {
+    return false;
+  }
 }
 
 if (isDirectRun()) {

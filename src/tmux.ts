@@ -76,6 +76,12 @@ export function ensureAgentsWindow(session: string, windowName: string, cwd: str
 }
 
 export function newAgentPane(init: AgentPaneInit): string {
+  // Re-ensure the agents window: when an agent pane closes and no other panes
+  // remain (e.g. parallel=1 between sequential reviews), tmux garbage-collects
+  // the empty window. Without this, the next split-window would fail with
+  // "can't find window: agents". The placeholder pane keeps it alive until the
+  // first concurrent agent pane is up.
+  ensureAgentsWindow(init.session, init.windowName, init.cwd);
   const target = `${init.session}:${init.windowName}`;
   const result = spawnSync(
     'tmux',

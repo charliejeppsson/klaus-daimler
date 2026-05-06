@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { parseArgs, shouldBootstrapInTmux } from './main.js';
+import { forwardedTmuxEnvFlags, parseArgs, shouldBootstrapInTmux } from './main.js';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -85,5 +85,32 @@ describe('shouldBootstrapInTmux', () => {
         {},
       ),
     ).toBe(true);
+  });
+});
+
+describe('forwardedTmuxEnvFlags', () => {
+  it('returns no flags when no klaus config vars are set', () => {
+    expect(forwardedTmuxEnvFlags({})).toEqual([]);
+  });
+
+  it('forwards KLAUS_CONVENTIONS_PATH and label overrides as -e flags', () => {
+    expect(
+      forwardedTmuxEnvFlags({
+        KLAUS_CONVENTIONS_PATH: 'docs/conventions.md',
+        KLAUS_LABEL_READY_FOR_AGENT: 'agent-ready',
+        UNRELATED: 'ignored',
+      }),
+    ).toEqual([
+      '-e',
+      'KLAUS_CONVENTIONS_PATH=docs/conventions.md',
+      '-e',
+      'KLAUS_LABEL_READY_FOR_AGENT=agent-ready',
+    ]);
+  });
+
+  it('skips empty values', () => {
+    expect(
+      forwardedTmuxEnvFlags({ KLAUS_CONVENTIONS_PATH: '', KLAUS_LABEL_NEEDS_INFO: 'needs' }),
+    ).toEqual(['-e', 'KLAUS_LABEL_NEEDS_INFO=needs']);
   });
 });

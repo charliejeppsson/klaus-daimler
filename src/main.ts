@@ -196,7 +196,18 @@ function bootstrapInTmuxAndAttach(repoRoot: string, args: MilestoneWorkflowArgs)
 
   const create = spawnSync(
     'tmux',
-    ['new-session', '-d', '-s', TMUX_SESSION, '-n', 'controller', '-c', repoRoot, innerCmd],
+    [
+      'new-session',
+      '-d',
+      '-s',
+      TMUX_SESSION,
+      '-n',
+      'controller',
+      '-c',
+      repoRoot,
+      ...forwardedTmuxEnvFlags(process.env),
+      innerCmd,
+    ],
     { encoding: 'utf8' },
   );
   if (create.status !== 0) {
@@ -221,6 +232,24 @@ function bootstrapInTmuxAndAttach(repoRoot: string, args: MilestoneWorkflowArgs)
 
 function shellQuote(s: string): string {
   return `'${s.replace(/'/g, `'\\''`)}'`;
+}
+
+const FORWARDED_ENV_VARS = [
+  'KLAUS_CONVENTIONS_PATH',
+  'KLAUS_LABEL_READY_FOR_AGENT',
+  'KLAUS_LABEL_NEEDS_INFO',
+  'KLAUS_LABEL_READY_FOR_REVIEW',
+  'KLAUS_LABEL_REVIEWED_BY_AGENT',
+] as const;
+
+export function forwardedTmuxEnvFlags(env: NodeJS.ProcessEnv): string[] {
+  // tmux new-session inherits its env from the running tmux server, captured when
+  // that server first started — not from the shell that invoked klaus. Pass each
+  // klaus config var via `-e` so the controller process sees the current values.
+  return FORWARDED_ENV_VARS.flatMap((name) => {
+    const value = env[name];
+    return value === undefined || value === '' ? [] : ['-e', `${name}=${value}`];
+  });
 }
 
 function assertRepoRoot(cwd: string): string {

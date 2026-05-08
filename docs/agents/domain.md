@@ -6,7 +6,9 @@ How the engineering skills should consume this repo's domain documentation when 
 
 - **`CONTEXT.md`** at the repo root, or
 - **`CONTEXT-MAP.md`** at the repo root if it exists — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
+- **`ARCHITECTURE.md`** — read before changing controller behavior.
 - **`docs/adr/`** — read ADRs that touch the area you're about to work in.
+- **`docs/proposals/`** — read proposals only when working on future or unsettled features they describe.
 
 If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The producer skill (`/grill-with-docs`) creates them lazily when terms or decisions actually get resolved.
 
@@ -16,10 +18,11 @@ This repo is **single-context**:
 
 ```
 /
+├── ARCHITECTURE.md
 ├── CONTEXT.md
 ├── docs/
-│   ├── design.md          ← architecture, lifecycle, roadmap
-│   └── adr/               ← architectural decision records
+│   ├── adr/               ← architectural decision records
+│   └── proposals/         ← future or unsettled designs
 └── src/
 ```
 
@@ -48,4 +51,4 @@ If the concept you need isn't in the glossary yet, that's a signal — either yo
 
 If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
 
-> _Contradicts ADR-0003 (no per-issue cost cap) — but worth reopening because…_
+> _Contradicts ADR-3 (git worktrees for agent isolation) — but worth reopening because..._

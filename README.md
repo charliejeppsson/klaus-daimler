@@ -130,7 +130,7 @@ klaus implement --milestone v0.2
 
 ## Contributing
 
-Architecture, the per-issue state machine, and the planning algorithm are documented in [`docs/design.md`](docs/design.md). Klaus reads it before he changes course; you should too.
+Klaus vocabulary lives in [`CONTEXT.md`](CONTEXT.md). The high-level architecture is documented in [`ARCHITECTURE.md`](ARCHITECTURE.md), durable decisions in [`docs/adr/`](docs/adr/), and future proposals in [`docs/proposals/`](docs/proposals/). Klaus reads the relevant docs before he changes course; you should too.
 
 ```sh
 pnpm install

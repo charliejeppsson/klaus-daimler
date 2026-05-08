@@ -4,7 +4,10 @@ Standalone npm package (`klaus-daimler`, binary `klaus`) that drives a GitHub mi
 
 ## Always load before any work in this repo
 
-- **`docs/design.md`** — architecture, file layout, per-issue state machine, session/worktree lifecycle, planning algorithm, phased roadmap. Read before changing controller behavior.
+- **`CONTEXT.md`** — canonical Klaus vocabulary: Controller Klaus, Implementer Klaus, Reviewer Klaus, lifecycle labels, worktrees, and run directories.
+- **`ARCHITECTURE.md`** — high-level file structure, application architecture, runtime flows, and ADR index. Read before changing controller behavior.
+- **Relevant `docs/adr/` records** — durable decisions and trade-offs. Read any ADRs that touch the area you are changing.
+- **Relevant `docs/proposals/` notes** — future or unsettled ideas. Read these only when working on a feature they describe.
 
 ## Tooling
 
@@ -24,4 +27,4 @@ Five canonical triage labels using the default names (`needs-triage`, `needs-inf
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` at the repo root, ADRs at `docs/adr/`. See `docs/agents/domain.md`.
+Single-context: `CONTEXT.md` at the repo root, ADRs at `docs/adr/`, proposals at `docs/proposals/`. See `docs/agents/domain.md`.

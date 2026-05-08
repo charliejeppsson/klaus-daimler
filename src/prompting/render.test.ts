@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { renderReviewTemplate, renderTemplate } from './prompts.js';
+import path from 'node:path';
+
+import { findPromptsDir, renderReviewTemplate, renderTemplate } from './render.js';
+
+describe('findPromptsDir', () => {
+  it('finds the root prompts directory from a nested source path', () => {
+    const nestedSourcePath = path.join(process.cwd(), 'src', 'prompting', 'render.ts');
+
+    expect(findPromptsDir(nestedSourcePath)).toBe(path.join(process.cwd(), 'prompts'));
+  });
+});
 
 describe('renderTemplate', () => {
   it('substitutes every placeholder with its input value', () => {

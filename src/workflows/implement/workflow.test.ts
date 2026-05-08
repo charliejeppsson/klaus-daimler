@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { dispatchWaves } from './implement.js';
-import type { IssueRef } from './planner.js';
+import { dispatchWaves } from '../../controller/dispatch-waves.js';
+import type { IssueRef } from '../../controller/scheduler.js';
 
 const ref = (number: number): IssueRef => ({
   number,

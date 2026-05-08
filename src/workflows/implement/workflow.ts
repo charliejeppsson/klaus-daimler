@@ -1,36 +1,35 @@
-import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { appendFile, mkdir, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import path from 'node:path';
-import { createInterface } from 'node:readline';
 
-import { loadConfig } from './config.js';
-import {
-  createWorktree,
-  deleteLocalBranch,
-  pathsForIssue,
-  removeWorktree,
-  worktreeExists,
-} from './git.js';
-import {
-  fetchIssue,
-  fetchIssueState,
-  findPrForBranch,
-  listMergedAgentPrs,
-  listMilestoneIssues,
-  ensureReadyForReviewLabel,
-  flipIssueToReadyForReview,
-  NEEDS_INFO,
-  READY_FOR_AGENT,
-} from './github.js';
+import { confirmAtTty } from '../../controller/confirmation.js';
+import { readConventions } from '../../controller/conventions.js';
+import { dispatchWaves } from '../../controller/dispatch-waves.js';
 import {
   buildHardBlockerMap,
   parseBlockedBy,
   planSequential,
   type BlockedIssue,
   type IssueRef,
-} from './planner.js';
-import { buildImplementerPrompt } from './prompts.js';
-import { createSemaphore } from './semaphore.js';
+} from '../../controller/scheduler.js';
+import {
+  createWorktree,
+  deleteLocalBranch,
+  pathsForIssue,
+  removeWorktree,
+  worktreeExists,
+} from '../../shell/git.js';
+import {
+  NEEDS_INFO,
+  READY_FOR_AGENT,
+  ensureReadyForReviewLabel,
+  fetchIssue,
+  fetchIssueState,
+  findPrForBranch,
+  flipIssueToReadyForReview,
+  listMergedAgentPrs,
+  listMilestoneIssues,
+} from '../../shell/github.js';
 import {
   AGENTS_WINDOW,
   POLL_INTERVAL_MS,
@@ -43,7 +42,8 @@ import {
   sendKeys,
   signalChannel,
   waitFor,
-} from './tmux.js';
+} from '../../shell/tmux.js';
+import { buildImplementerPrompt } from '../../prompting/render.js';
 
 export type ImplementerTargetOutcome = 'pr-opened' | 'abandoned';
 
@@ -277,15 +277,6 @@ async function runImplementerTarget(args: {
   return 'pr-opened';
 }
 
-export async function readConventions(repoRoot: string): Promise<string> {
-  const { conventionsPath } = loadConfig();
-  if (conventionsPath === null) return '';
-  const resolved = path.isAbsolute(conventionsPath)
-    ? conventionsPath
-    : path.join(repoRoot, conventionsPath);
-  return readFile(resolved, 'utf8');
-}
-
 function runImplementerClaudeInTmux(args: {
   session: string;
   issueNumber: number;
@@ -366,71 +357,6 @@ function runImplementerClaudeInTmux(args: {
       }
     }, POLL_INTERVAL_MS);
   });
-}
-
-type RunResult<TOutcome extends string> =
-  | { kind: 'ok'; outcome: TOutcome }
-  | { kind: 'error'; message: string };
-
-export async function dispatchWaves<TOutcome extends string>(args: {
-  issues: readonly IssueRef[];
-  blockerMap: ReadonlyMap<number, ReadonlySet<number>>;
-  parallel: number;
-  onStart: (issue: IssueRef) => void;
-  runOne: (issue: IssueRef) => Promise<TOutcome>;
-  onFinish: (issue: IssueRef, result: RunResult<TOutcome>) => Promise<void>;
-}): Promise<{
-  ranIssues: { number: number; outcome: TOutcome }[];
-  errors: { number: number; message: string }[];
-}> {
-  const sem = createSemaphore(args.parallel);
-  const completed = new Set<number>();
-  const dispatched = new Set<number>();
-  const ranIssues: { number: number; outcome: TOutcome }[] = [];
-  const errors: { number: number; message: string }[] = [];
-
-  let active = 0;
-  let resolveAll!: () => void;
-  const allDone = new Promise<void>((resolve) => {
-    resolveAll = resolve;
-  });
-
-  const tryDispatch = (): void => {
-    for (const issue of args.issues) {
-      if (dispatched.has(issue.number)) continue;
-      const blockers = args.blockerMap.get(issue.number);
-      const ready = blockers === undefined || [...blockers].every((b) => completed.has(b));
-      if (!ready) continue;
-      dispatched.add(issue.number);
-      active += 1;
-      void (async () => {
-        const release = await sem.acquire();
-        let result: RunResult<TOutcome>;
-        try {
-          args.onStart(issue);
-          const outcome = await args.runOne(issue);
-          result = { kind: 'ok', outcome };
-          ranIssues.push({ number: issue.number, outcome });
-        } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
-          result = { kind: 'error', message };
-          errors.push({ number: issue.number, message });
-        } finally {
-          completed.add(issue.number);
-          release();
-        }
-        await args.onFinish(issue, result);
-        active -= 1;
-        tryDispatch();
-        if (active === 0) resolveAll();
-      })();
-    }
-  };
-
-  tryDispatch();
-  if (active === 0) resolveAll();
-  await allDone;
-  return { ranIssues, errors };
 }
 
 function resolveExternalBlockerStates(
@@ -534,16 +460,6 @@ function cleanupMergedWorktrees(repoRoot: string): void {
     }
     deleteLocalBranch(repoRoot, pr.branch);
   }
-}
-
-export function confirmAtTty(prompt: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
-    rl.question(prompt, (answer) => {
-      rl.close();
-      resolve(/^y(es)?$/i.test(answer.trim()));
-    });
-  });
 }
 
 function shellQuote(s: string): string {

@@ -5,5 +5,5 @@
 Open questions:
 
 - Should `klaus plan` create GitHub issues directly, or only print a proposed issue plan?
-- Should it use the same `## Blocked by` convention that the implementer planner already parses?
+- Should it use the same `## Blocked by` convention that Controller Klaus's scheduler already parses?
 - Should it be milestone-scoped from the beginning?

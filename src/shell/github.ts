@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 
 import { z } from 'zod';
 
-import { loadConfig } from './config.js';
+import { loadConfig } from '../config.js';
 
 const labels = loadConfig().labels;
 

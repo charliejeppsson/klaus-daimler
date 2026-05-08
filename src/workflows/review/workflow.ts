@@ -1,7 +1,9 @@
 import { appendFile, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { createInterface } from 'node:readline';
 
+import { confirmAtTty } from '../../controller/confirmation.js';
+import { readConventions } from '../../controller/conventions.js';
+import { createSemaphore } from '../../controller/semaphore.js';
 import {
   createReviewWorktree,
   pathsForIssue,
@@ -9,20 +11,17 @@ import {
   removeReviewWorktree,
   worktreeExists,
   type ReviewWorktreePaths,
-} from './git.js';
+} from '../../shell/git.js';
 import {
+  READY_FOR_REVIEW,
   fetchPrDetails,
   findPrForBranch,
+  flipIssueToReviewedByAgent,
   hasCommentReviewAfter,
   listMilestoneIssues,
-  flipIssueToReviewedByAgent,
   type IssueListItem,
   type PullRequest,
-  READY_FOR_REVIEW,
-} from './github.js';
-import { readConventions } from './implement.js';
-import { buildReviewPrompt } from './prompts.js';
-import { createSemaphore } from './semaphore.js';
+} from '../../shell/github.js';
 import {
   AGENTS_WINDOW,
   POLL_INTERVAL_MS,
@@ -35,7 +34,8 @@ import {
   sendKeys,
   signalChannel,
   waitFor,
-} from './tmux.js';
+} from '../../shell/tmux.js';
+import { buildReviewPrompt } from '../../prompting/render.js';
 
 export type ReviewRunOutcome = 'review-posted' | 'abandoned';
 
@@ -449,16 +449,6 @@ export function formatReviewControlHeader(args: {
   lines.push('');
   lines.push('outcomes:');
   return `${lines.join('\n')}\n`;
-}
-
-function confirmAtTty(prompt: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
-    rl.question(prompt, (answer) => {
-      rl.close();
-      resolve(/^y(es)?$/i.test(answer.trim()));
-    });
-  });
 }
 
 function shellQuote(s: string): string {

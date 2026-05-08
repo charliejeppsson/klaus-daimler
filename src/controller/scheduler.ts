@@ -104,7 +104,7 @@ export function planSequential(
     }
     if (ready.length === 0) {
       const cycle = [...remaining].sort((a, b) => a - b).join(', ');
-      throw new Error(`planner: hard-blocker cycle detected among issues ${cycle}`);
+      throw new Error(`scheduler: hard-blocker cycle detected among issues ${cycle}`);
     }
     ready.sort((a, b) => {
       const sa = countPendingSoft(a, softEdges, remaining);
@@ -113,9 +113,9 @@ export function planSequential(
       return a - b;
     });
     const pick = ready[0];
-    if (pick === undefined) throw new Error('planner: unreachable');
+    if (pick === undefined) throw new Error('scheduler: unreachable');
     const issue = candidates.get(pick);
-    if (issue === undefined) throw new Error('planner: unreachable');
+    if (issue === undefined) throw new Error('scheduler: unreachable');
     ordered.push(issue);
     remaining.delete(pick);
   }

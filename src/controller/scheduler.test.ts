@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IssueRef } from './planner.js';
-import { buildHardBlockerMap, parseBlockedBy, planSequential } from './planner.js';
+import type { IssueRef } from './scheduler.js';
+import { buildHardBlockerMap, parseBlockedBy, planSequential } from './scheduler.js';
 
 const issue = (number: number, body: string): IssueRef => ({
   number,
@@ -114,7 +114,7 @@ describe('planSequential', () => {
         [issue(1, '## Blocked by\n\n#2\n'), issue(2, '## Blocked by\n\n#1\n')],
         () => false,
       ),
-    ).toThrow(/cycle/);
+    ).toThrow(/scheduler: hard-blocker cycle/);
   });
 });
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { buildReviewPaneCommand, collectReviewTargets } from './review.js';
+import { buildReviewPaneCommand, collectReviewTargets } from './workflow.js';
 
 const paths = {
   worktreePath: '/repo/.klaus/worktrees/issue-11-example-issue',

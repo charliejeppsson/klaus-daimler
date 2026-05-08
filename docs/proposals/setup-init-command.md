@@ -5,8 +5,8 @@
 Likely responsibilities:
 
 - Detect common agent entry files such as `AGENTS.md`, `CLAUDE.md`, and `README.md`.
-- Ask for or discover the repo conventions file, then persist that path locally for future prompt injection.
+- Require the user to provide the target repo's conventions file path, then persist that path locally for future prompt injection.
 - Check for required GitHub labels and offer to create them.
 - Check that `.klaus/` is ignored.
 
-The current escape hatch remains `KLAUS_CONVENTIONS_PATH`.
+Until this flow exists, conventions injection remains manual configuration.

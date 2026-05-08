@@ -7,6 +7,7 @@ How the engineering skills should consume this repo's domain documentation when 
 - **`CONTEXT.md`** at the repo root, or
 - **`CONTEXT-MAP.md`** at the repo root if it exists — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
 - **`ARCHITECTURE.md`** — read before changing controller behavior.
+- **`docs/conventions.md`** — read before code changes.
 - **`docs/adr/`** — read ADRs that touch the area you're about to work in.
 - **`docs/proposals/`** — read proposals only when working on future or unsettled features they describe.
 
@@ -22,6 +23,7 @@ This repo is **single-context**:
 ├── CONTEXT.md
 ├── docs/
 │   ├── adr/               ← architectural decision records
+│   ├── conventions.md     ← coding conventions for this repo
 │   └── proposals/         ← future or unsettled designs
 └── src/
 ```

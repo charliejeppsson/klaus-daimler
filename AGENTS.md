@@ -6,6 +6,7 @@ Standalone npm package (`klaus-daimler`, binary `klaus`) that drives a GitHub mi
 
 - **`CONTEXT.md`** — canonical Klaus vocabulary: Controller Klaus, Implementer Klaus, Reviewer Klaus, lifecycle labels, worktrees, and run directories.
 - **`ARCHITECTURE.md`** — high-level file structure, application architecture, runtime flows, and ADR index. Read before changing controller behavior.
+- **`docs/conventions.md`** — coding style, testing rules, shell-boundary patterns, and commit message format. Follow it for all code changes.
 - **Relevant `docs/adr/` records** — durable decisions and trade-offs. Read any ADRs that touch the area you are changing.
 - **Relevant `docs/proposals/` notes** — future or unsettled ideas. Read these only when working on a feature they describe.
 

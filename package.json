@@ -1,6 +1,6 @@
 {
   "name": "klaus-daimler",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A loyal first mate for your codebase. Plans the milestone, ships a PR for each issue, then reviews them with a crew of parallel agents. Wears a red beanie.",
   "license": "MIT",
   "author": "Charlie Jeppsson",

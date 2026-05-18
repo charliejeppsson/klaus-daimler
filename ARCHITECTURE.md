@@ -1,6 +1,6 @@
 # Klaus Architecture
 
-Klaus is a local TypeScript CLI that drives GitHub milestone issues through Claude Code sessions. Controller Klaus is deterministic: it schedules eligible work, creates local worktrees, launches Claude Code in tmux panes, watches GitHub for terminal outcomes, mutates lifecycle labels, and cleans up local state.
+Klaus is a local TypeScript CLI that drives GitHub milestone issues through selected coding-agent CLI sessions. Controller Klaus is deterministic: it schedules eligible work, creates local worktrees, launches agents in tmux panes, watches GitHub for terminal outcomes, mutates lifecycle labels, and cleans up local state.
 
 ## File Structure
 
@@ -14,7 +14,7 @@ src/
     plan/             reserved for the future Planner Klaus workflow; not tracked yet
   controller/         shared deterministic Controller Klaus mechanics
     scheduler.ts      blocked-by parsing and dispatch ordering
-  shell/              gh, git, and tmux shell boundaries
+  shell/              coding-agent, gh, git, and tmux shell boundaries
   prompting/          prompt loading and rendering
 
 prompts/
@@ -36,7 +36,7 @@ The source layout is workflow-first. Each Klaus hat gets a directory under `src/
 
 Controller Klaus mechanics that are shared across workflows live in `src/controller/`. The current `scheduler.ts` module is deterministic dispatch ordering: it parses `## Blocked by`, classifies blocker state, and orders issues for the implement workflow. It is not Planner Klaus.
 
-External command boundaries live in `src/shell/` because they shell out to `gh`, `git`, and `tmux`.
+External command boundaries live in `src/shell/` because they shell out to coding-agent CLIs, `gh`, `git`, and `tmux`.
 
 ## Application Architecture
 

@@ -1,4 +1,9 @@
 import { TMUX_SESSION } from '../shell/tmux.js';
+import {
+  DEFAULT_CODING_AGENT,
+  parseCodingAgent,
+  type CodingAgent,
+} from '../shell/agent.js';
 
 export type KlausCommand = 'implement' | 'review';
 
@@ -7,17 +12,19 @@ export type MilestoneWorkflowArgs = Readonly<{
   milestone: string;
   skipPlanConfirmation: boolean;
   parallel: number;
+  agent: CodingAgent;
 }>;
 
 export type ParsedArgs = MilestoneWorkflowArgs;
 
 const USAGE = `Usage:
-  klaus implement --milestone <name> [--parallel N] [--skip-plan-confirmation]
-  klaus review --milestone <name> [--parallel N] [--skip-plan-confirmation]
+  klaus implement --milestone <name> [--parallel N] [--agent claude|codex] [--skip-plan-confirmation]
+  klaus review --milestone <name> [--parallel N] [--agent claude|codex] [--skip-plan-confirmation]
 
   --parallel N:                 dispatch up to N agents concurrently (default 1).
                                 Implementer and reviewer workflows boot a tmux
                                 session '${TMUX_SESSION}' and auto-attach, even when N = 1.
+  --agent claude|codex:         coding agent CLI to run in each pane (default claude).
   --skip-plan-confirmation:     skip the interactive "Set sail, Captain? [y/N]"
                                 confirmation shown after the plan is printed.
 `;
@@ -38,6 +45,7 @@ function parseMilestoneWorkflowArgs(
   let milestone: string | undefined;
   let skipPlanConfirmation = false;
   let parallel = 1;
+  let agent = DEFAULT_CODING_AGENT;
   for (let i = 0; i < rest.length; i += 1) {
     const arg = rest[i];
     if (arg === '--milestone') {
@@ -67,6 +75,21 @@ function parseMilestoneWorkflowArgs(
       i += 1;
       continue;
     }
+    if (arg === '--agent') {
+      const value = rest[i + 1];
+      if (value === undefined || value.startsWith('--')) {
+        process.stderr.write(`${commandName}: --agent requires claude or codex\n${USAGE}`);
+        process.exit(2);
+      }
+      const parsed = parseCodingAgent(value);
+      if (parsed === null) {
+        process.stderr.write(`${commandName}: --agent must be claude or codex (got '${value}')\n`);
+        process.exit(2);
+      }
+      agent = parsed;
+      i += 1;
+      continue;
+    }
     if (arg === '--skip-plan-confirmation') {
       skipPlanConfirmation = true;
       continue;
@@ -78,5 +101,5 @@ function parseMilestoneWorkflowArgs(
     process.stderr.write(`${commandName}: --milestone <name> is required\n${USAGE}`);
     process.exit(2);
   }
-  return { command, milestone, skipPlanConfirmation, parallel };
+  return { command, milestone, skipPlanConfirmation, parallel, agent };
 }

@@ -35,6 +35,7 @@ import {
   signalChannel,
   waitFor,
 } from '../../shell/tmux.js';
+import { buildCodingAgentPromptCommand, type CodingAgent } from '../../shell/agent.js';
 import { buildReviewPrompt } from '../../prompting/render.js';
 
 export type ReviewRunOutcome = 'review-posted' | 'abandoned';
@@ -45,6 +46,7 @@ export type RunReviewerWorkflowOptions = Readonly<{
   runDir: string;
   skipPlanConfirmation: boolean;
   parallel: number;
+  agent: CodingAgent;
   session: string;
   agentsWindow: string;
 }>;
@@ -71,8 +73,16 @@ export type ReviewTargetPlan = Readonly<{
 export async function runReviewerWorkflow(
   options: RunReviewerWorkflowOptions,
 ): Promise<ReviewerWorkflowOutcome> {
-  const { milestone, repoRoot, runDir, skipPlanConfirmation, parallel, session, agentsWindow } =
-    options;
+  const {
+    milestone,
+    repoRoot,
+    runDir,
+    skipPlanConfirmation,
+    parallel,
+    agent,
+    session,
+    agentsWindow,
+  } = options;
   if (!Number.isInteger(parallel) || parallel < 1) {
     throw new Error(
       `runReviewerWorkflow: parallel must be a positive integer, got ${String(parallel)}`,
@@ -91,7 +101,7 @@ export async function runReviewerWorkflow(
   }
 
   const plan = collectReviewTargets({ repoRoot, issues });
-  printReviewPlan({ milestone, targets: plan.targets, skipped: plan.skipped, parallel });
+  printReviewPlan({ milestone, targets: plan.targets, skipped: plan.skipped, parallel, agent });
 
   if (plan.targets.length === 0) {
     process.stdout.write('Captain — nothing to review.\n');
@@ -115,6 +125,7 @@ export async function runReviewerWorkflow(
       targets: plan.targets,
       skipped: plan.skipped,
       parallel,
+      agent,
     }),
     'utf8',
   );
@@ -144,6 +155,7 @@ export async function runReviewerWorkflow(
           repoRoot,
           runDir,
           conventions,
+          agent,
           session,
           agentsWindow,
         });
@@ -186,10 +198,11 @@ async function runReviewerTarget(args: {
   readonly repoRoot: string;
   readonly runDir: string;
   readonly conventions: string;
+  readonly agent: CodingAgent;
   readonly session: string;
   readonly agentsWindow: string;
 }): Promise<ReviewRunOutcome> {
-  const { target, repoRoot, runDir, conventions, session, agentsWindow } = args;
+  const { target, repoRoot, runDir, conventions, agent, session, agentsWindow } = args;
   const details = fetchPrDetails(target.pr.number);
   createReviewWorktree(repoRoot, target.reviewPaths);
 
@@ -213,8 +226,9 @@ async function runReviewerTarget(args: {
   await writeFile(promptPath, prompt, 'utf8');
 
   const startedAt = new Date().toISOString();
-  const pane = launchReviewClaudeInTmux({
+  const pane = launchReviewAgentInTmux({
     session,
+    agent,
     prNumber: target.pr.number,
     issueNumber: target.issue.number,
     branch: target.branch,
@@ -259,15 +273,16 @@ export type ReviewPane = Readonly<{
   channel: string;
 }>;
 
-function launchReviewClaudeInTmux(args: {
+function launchReviewAgentInTmux(args: {
   session: string;
+  agent: CodingAgent;
   prNumber: number;
   issueNumber: number;
   branch: string;
   cwd: string;
   promptPath: string;
 }): ReviewPane {
-  const { session, prNumber, issueNumber, branch, cwd, promptPath } = args;
+  const { session, agent, prNumber, issueNumber, branch, cwd, promptPath } = args;
   const channel = `klaus-review-pr-${String(prNumber)}`;
   const paneTitle = `r-${String(prNumber)}`;
 
@@ -278,6 +293,7 @@ function launchReviewClaudeInTmux(args: {
     cwd,
     command: buildReviewPaneCommand({
       prNumber,
+      agent,
       issueNumber,
       branch,
       paneTitle,
@@ -290,6 +306,7 @@ function launchReviewClaudeInTmux(args: {
 }
 
 export function buildReviewPaneCommand(args: {
+  agent: CodingAgent;
   prNumber: number;
   issueNumber: number;
   branch: string;
@@ -306,7 +323,7 @@ export function buildReviewPaneCommand(args: {
     `KLAUS_PANE_TITLE=${shellQuote(args.paneTitle)} ` +
     `KLAUS_RUN_DIR=${shellQuote(path.dirname(args.promptPath))} ` +
     `KLAUS_TMUX_PANE="$(tmux display-message -p '#{pane_id}')" ` +
-    `claude "$(cat ${shellQuote(args.promptPath)})"; ` +
+    `${buildCodingAgentPromptCommand({ agent: args.agent, promptPath: args.promptPath })}; ` +
     `tmux wait-for -S ${args.channel}; exec zsh`
   );
 }
@@ -404,9 +421,11 @@ export function printReviewPlan(args: {
   targets: readonly ReviewTarget[];
   skipped: readonly { number: number; reason: string }[];
   parallel: number;
+  agent: CodingAgent;
 }): void {
   process.stdout.write(
-    `\nReview plan (milestone: ${args.milestone}, parallel: ${String(args.parallel)})\n`,
+    `\nReview plan ` +
+      `(milestone: ${args.milestone}, parallel: ${String(args.parallel)}, agent: ${args.agent})\n`,
   );
   if (args.targets.length > 0) {
     process.stdout.write('  Review:\n');
@@ -430,11 +449,13 @@ export function formatReviewControlHeader(args: {
   targets: readonly ReviewTarget[];
   skipped: readonly { number: number; reason: string }[];
   parallel: number;
+  agent: CodingAgent;
 }): string {
   const lines: string[] = [];
   lines.push(`klaus review @ ${new Date().toISOString()}`);
   lines.push(`milestone: ${args.milestone}`);
   lines.push(`parallel: ${String(args.parallel)}`);
+  lines.push(`agent: ${args.agent}`);
   lines.push('');
   lines.push('review:');
   for (const target of args.targets) {

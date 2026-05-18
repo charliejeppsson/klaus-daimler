@@ -7,8 +7,8 @@
 Klaus Daimler is a coding agent. He plans the milestone. He implements the issues. He reviews the pull requests. He runs as many parallel agents as you tell him to, each in its own tmux pane for full visibility and control. Yes, he has heard of Ralph Wiggum. He would rather not discuss Ralph Wiggum. He wears a red beanie. He will not let you down.
 
 - `klaus plan` — TBD
-- `klaus implement` — picks issues labeled `ready-for-agent`, dispatches N parallel Claude Code agents into a git worktree per issue, each with its own tmux pane for full visibility and control. Flips the issue label to `ready-for-review` once a PR is open.
-- `klaus review` — picks issues with an open PR labeled `ready-for-review`, runs N Claude Code reviewer agents that each post one `COMMENT` review, and flips the issue to `reviewed-by-agent` for a human to merge.
+- `klaus implement` — picks issues labeled `ready-for-agent`, dispatches N parallel coding agents into a git worktree per issue, each with its own tmux pane for full visibility and control. Flips the issue label to `ready-for-review` once a PR is open.
+- `klaus review` — picks issues with an open PR labeled `ready-for-review`, runs N coding-agent reviewers that each post one `COMMENT` review, and flips the issue to `reviewed-by-agent` for a human to merge.
 
 Named after [Klaus Daimler](https://en.wikipedia.org/wiki/The_Life_Aquatic_with_Steve_Zissou), the honorable first mate of the Belafonte. You are the captain. Klaus is your first mate.
 
@@ -26,7 +26,9 @@ Klaus needs a few things on board before he sails:
 - Node 22+
 - `gh` (authenticated against the target repo)
 - `git`, `tmux`
-- `claude` CLI (Claude Code) on `PATH`, with `ANTHROPIC_API_KEY` set
+- One supported coding-agent CLI on `PATH`:
+  - `claude` (Claude Code), must already be logged in
+  - `codex`, must already be logged in
 
 ## Install
 
@@ -69,19 +71,20 @@ Before Klaus sails, in the target repo:
 Run from the root of a git repo with `gh` configured.
 
 ```sh
-klaus implement --milestone <name> [--parallel N] [--skip-plan-confirmation]
-klaus review    --milestone <name> [--parallel N] [--skip-plan-confirmation]
+klaus implement --milestone <name> [--parallel N] [--agent claude|codex] [--skip-plan-confirmation]
+klaus review    --milestone <name> [--parallel N] [--agent claude|codex] [--skip-plan-confirmation]
 ```
 
 | Flag                       | Default | Purpose                                                                            |
 | -------------------------- | ------- | ---------------------------------------------------------------------------------- |
 | `--milestone <name>`       | —       | Required. Milestone whose issues Klaus picks up.                                   |
 | `--parallel N`             | `1`     | Dispatch up to N agents concurrently.                                              |
+| `--agent claude\|codex`    | `claude` | Coding-agent CLI to run in each tmux pane.                                         |
 | `--skip-plan-confirmation` | `false` | Skip the interactive `Set sail, Captain? [y/N]` Klaus shows after the plan is printed. |
 
-Both commands boot a tmux session named `klaus` with a `controller` window (live log) and an `agents` window (one tiled pane per active worktree). `Ctrl-b 0` returns to the controller; `Ctrl-b 1` jumps to agents.
+Both commands boot a tmux session named `klaus` with a `controller` window (live log) and an `agents` window (one tiled pane per active worktree). `Ctrl-b 0` returns to the controller; `Ctrl-b 1` jumps to agents. Klaus does not forward provider API keys into tmux; log in to `claude` or `codex` before running Klaus.
 
-> **Cost:** `--parallel N` runs N concurrent Claude Code sessions against your API key. Start with the default before turning it up, Captain.
+> **Cost:** `--parallel N` runs N concurrent selected-agent sessions against your configured account or API key. Start with the default before turning it up, Captain.
 
 ### Issue body convention
 

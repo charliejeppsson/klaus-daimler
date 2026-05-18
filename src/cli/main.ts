@@ -37,6 +37,7 @@ export async function main(): Promise<void> {
       runDir,
       skipPlanConfirmation: args.skipPlanConfirmation,
       parallel: args.parallel,
+      agent: args.agent,
       session: TMUX_SESSION,
       agentsWindow: AGENTS_WINDOW,
     });
@@ -50,6 +51,7 @@ export async function main(): Promise<void> {
     runDir,
     skipPlanConfirmation: args.skipPlanConfirmation,
     parallel: args.parallel,
+    agent: args.agent,
     session: TMUX_SESSION,
     agentsWindow: AGENTS_WINDOW,
   });

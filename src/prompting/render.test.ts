@@ -92,9 +92,11 @@ describe('renderReviewTemplate', () => {
     const template = [
       'Run `gh pr view {{PR_NUMBER}} --json title,body,files,commits,comments,reviews,statusCheckRollup`.',
       'Run `gh pr diff {{PR_NUMBER}}`.',
+      'Read existing PR comments and reviews from `gh pr view`.',
       'Write payload to `{{REVIEW_PAYLOAD_PATH}}`.',
       '`"event": "COMMENT"`.',
       '`body` must identify itself in the first line as `Klaus agent review`.',
+      'Include a `PR discussion` section in the body.',
       'Include at most 10 inline comments.',
       'Submit `gh api --method POST repos/{owner}/{repo}/pulls/{{PR_NUMBER}}/reviews --input {{REVIEW_PAYLOAD_PATH}}`.',
       'Do not use `gh pr review`.',
@@ -122,9 +124,11 @@ describe('renderReviewTemplate', () => {
       'gh pr view 44 --json title,body,files,commits,comments,reviews,statusCheckRollup',
     );
     expect(out).toContain('gh pr diff 44');
+    expect(out).toContain('Read existing PR comments and reviews from `gh pr view`.');
     expect(out).toContain('/tmp/review.json');
     expect(out).toContain('"event": "COMMENT"');
     expect(out).toContain('Klaus agent review');
+    expect(out).toContain('Include a `PR discussion` section in the body.');
     expect(out).toContain('at most 10 inline comments');
     expect(out).toContain(
       'gh api --method POST repos/{owner}/{repo}/pulls/44/reviews --input /tmp/review.json',

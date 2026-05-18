@@ -116,6 +116,7 @@ describe('collectReviewTargets', () => {
 describe('buildReviewPaneCommand', () => {
   it('signals the review channel when Claude exits', () => {
     const command = buildReviewPaneCommand({
+      agent: 'claude',
       prNumber: 123,
       issueNumber: 11,
       branch: 'agent/issue-11-example',
@@ -127,6 +128,21 @@ describe('buildReviewPaneCommand', () => {
     expect(command).toContain('KLAUS_REVIEW=1');
     expect(command).toContain("KLAUS_PANE_TITLE='r-123'");
     expect(command).toContain('claude "$(cat ');
+    expect(command).toContain('tmux wait-for -S klaus-review-pr-123');
+  });
+
+  it('can launch the review prompt with Codex', () => {
+    const command = buildReviewPaneCommand({
+      agent: 'codex',
+      prNumber: 123,
+      issueNumber: 11,
+      branch: 'agent/issue-11-example',
+      paneTitle: 'r-123',
+      promptPath: '/repo/.klaus/runs/review-pr-123.prompt.md',
+      channel: 'klaus-review-pr-123',
+    });
+
+    expect(command).toContain('codex --no-alt-screen "$(cat ');
     expect(command).toContain('tmux wait-for -S klaus-review-pr-123');
   });
 });

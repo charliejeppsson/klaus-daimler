@@ -13,6 +13,7 @@ describe('parseArgs', () => {
       milestone: 'M1',
       skipPlanConfirmation: false,
       parallel: 1,
+      agent: 'claude',
     });
   });
 
@@ -22,6 +23,7 @@ describe('parseArgs', () => {
       milestone: 'M1',
       skipPlanConfirmation: false,
       parallel: 1,
+      agent: 'claude',
     });
   });
 
@@ -33,7 +35,28 @@ describe('parseArgs', () => {
       milestone: 'M1',
       skipPlanConfirmation: true,
       parallel: 3,
+      agent: 'claude',
     });
+  });
+
+  it('parses codex as the selected coding agent', () => {
+    expect(parseArgs(['implement', '--milestone', 'M1', '--agent', 'codex'])).toEqual({
+      command: 'implement',
+      milestone: 'M1',
+      skipPlanConfirmation: false,
+      parallel: 1,
+      agent: 'codex',
+    });
+  });
+
+  it('rejects unknown coding agents', () => {
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('exit');
+    });
+
+    expect(() => parseArgs(['review', '--milestone', 'M1', '--agent', 'cursor'])).toThrow('exit');
+    expect(exit).toHaveBeenLastCalledWith(2);
   });
 
   it('rejects the removed loop, run, and yes interfaces', () => {
@@ -57,7 +80,13 @@ describe('shouldBootstrapInTmux', () => {
   it('bootstraps review runs even at parallel 1', () => {
     expect(
       shouldBootstrapInTmux(
-        { command: 'review', milestone: 'v0', skipPlanConfirmation: false, parallel: 1 },
+        {
+          command: 'review',
+          milestone: 'v0',
+          skipPlanConfirmation: false,
+          parallel: 1,
+          agent: 'claude',
+        },
         {},
       ),
     ).toBe(true);
@@ -66,7 +95,13 @@ describe('shouldBootstrapInTmux', () => {
   it('does not recursively bootstrap inside the klaus tmux controller', () => {
     expect(
       shouldBootstrapInTmux(
-        { command: 'review', milestone: 'v0', skipPlanConfirmation: false, parallel: 1 },
+        {
+          command: 'review',
+          milestone: 'v0',
+          skipPlanConfirmation: false,
+          parallel: 1,
+          agent: 'claude',
+        },
         { KLAUS_INSIDE_TMUX: '1' },
       ),
     ).toBe(false);
@@ -75,13 +110,25 @@ describe('shouldBootstrapInTmux', () => {
   it('bootstraps implementer runs with the same tmux behavior', () => {
     expect(
       shouldBootstrapInTmux(
-        { command: 'implement', milestone: 'v0', skipPlanConfirmation: false, parallel: 1 },
+        {
+          command: 'implement',
+          milestone: 'v0',
+          skipPlanConfirmation: false,
+          parallel: 1,
+          agent: 'claude',
+        },
         {},
       ),
     ).toBe(true);
     expect(
       shouldBootstrapInTmux(
-        { command: 'implement', milestone: 'v0', skipPlanConfirmation: false, parallel: 2 },
+        {
+          command: 'implement',
+          milestone: 'v0',
+          skipPlanConfirmation: false,
+          parallel: 2,
+          agent: 'codex',
+        },
         {},
       ),
     ).toBe(true);

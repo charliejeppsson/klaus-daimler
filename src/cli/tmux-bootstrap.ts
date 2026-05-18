@@ -29,6 +29,8 @@ export function bootstrapInTmuxAndAttach(repoRoot: string, args: ParsedArgs): vo
     args.milestone,
     '--parallel',
     String(args.parallel),
+    '--agent',
+    args.agent,
   ];
   if (args.skipPlanConfirmation) innerArgs.push('--skip-plan-confirmation');
   const innerCmd =
@@ -82,7 +84,7 @@ const FORWARDED_ENV_VARS = [
 export function forwardedTmuxEnvFlags(env: NodeJS.ProcessEnv): string[] {
   // tmux new-session inherits its env from the running tmux server, captured when
   // that server first started -- not from the shell that invoked klaus. Pass each
-  // klaus config var via `-e` so the controller process sees the current values.
+  // Klaus config var via `-e` so the controller process sees the current values.
   return FORWARDED_ENV_VARS.flatMap((name) => {
     const value = env[name];
     return value === undefined || value === '' ? [] : ['-e', `${name}=${value}`];

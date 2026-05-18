@@ -6,8 +6,8 @@ Klaus is a local CLI that coordinates coding agents against a GitHub milestone. 
 
 - **Klaus**: the product and overall agentic workflow system.
 - **Controller Klaus**: the deterministic wrapper started by the `klaus` CLI. It plans work, creates worktrees, starts tmux panes, watches for terminal outcomes, mutates labels, and cleans up local state.
-- **Implementer Klaus**: a Claude Code session launched by Controller Klaus to turn one GitHub issue into a committed branch and pull request.
-- **Reviewer Klaus**: a Claude Code session launched by Controller Klaus to inspect one pull request and post one neutral comment-style review.
+- **Implementer Klaus**: a selected coding-agent CLI session launched by Controller Klaus to turn one GitHub issue into a committed branch and pull request.
+- **Reviewer Klaus**: a selected coding-agent CLI session launched by Controller Klaus to inspect one pull request and post one neutral comment-style review.
 - **Target repo**: the git repository where `klaus` is run. Klaus assumes the current working directory is the target repo root.
 - **Milestone**: the GitHub milestone selected with `--milestone`. It scopes both implementation and review workflows.
 - **Issue blocker**: a `#N` reference in an issue body's `## Blocked by` section. Hard blockers prevent dispatch until closed; soft blockers only influence ordering.

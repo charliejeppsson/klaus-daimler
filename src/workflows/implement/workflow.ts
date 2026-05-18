@@ -43,6 +43,11 @@ import {
   signalChannel,
   waitFor,
 } from '../../shell/tmux.js';
+import {
+  buildCodingAgentPromptCommand,
+  codingAgentTranscriptHint,
+  type CodingAgent,
+} from '../../shell/agent.js';
 import { buildImplementerPrompt } from '../../prompting/render.js';
 
 export type ImplementerTargetOutcome = 'pr-opened' | 'abandoned';
@@ -53,6 +58,7 @@ export type RunImplementerWorkflowOptions = Readonly<{
   runDir: string;
   skipPlanConfirmation: boolean;
   parallel: number;
+  agent: CodingAgent;
   session: string;
   agentsWindow: string;
 }>;
@@ -67,8 +73,16 @@ export type ImplementerWorkflowOutcome = Readonly<{
 export async function runImplementerWorkflow(
   options: RunImplementerWorkflowOptions,
 ): Promise<ImplementerWorkflowOutcome> {
-  const { milestone, repoRoot, runDir, skipPlanConfirmation, parallel, session, agentsWindow } =
-    options;
+  const {
+    milestone,
+    repoRoot,
+    runDir,
+    skipPlanConfirmation,
+    parallel,
+    agent,
+    session,
+    agentsWindow,
+  } = options;
   if (!Number.isInteger(parallel) || parallel < 1) {
     throw new Error(
       `runImplementerWorkflow: parallel must be a positive integer, got ${String(parallel)}`,
@@ -116,7 +130,7 @@ export async function runImplementerWorkflow(
     dispatch.push(issue);
   }
 
-  printImplementerPlan({ milestone, dispatch, skipped, blocked: plan.blocked, parallel });
+  printImplementerPlan({ milestone, dispatch, skipped, blocked: plan.blocked, parallel, agent });
 
   if (dispatch.length === 0) {
     process.stdout.write('Captain — nothing to dispatch.\n');
@@ -151,6 +165,7 @@ export async function runImplementerWorkflow(
       skipped,
       blocked: plan.blocked,
       parallel,
+      agent,
     }),
     'utf8',
   );
@@ -177,6 +192,7 @@ export async function runImplementerWorkflow(
         issueNumber: issue.number,
         repoRoot,
         runDir,
+        agent,
         session,
       }),
     onFinish: async (issue, result) => {
@@ -205,9 +221,10 @@ async function runImplementerTarget(args: {
   readonly issueNumber: number;
   readonly repoRoot: string;
   readonly runDir: string;
+  readonly agent: CodingAgent;
   readonly session: string;
 }): Promise<ImplementerTargetOutcome> {
-  const { issueNumber, repoRoot, runDir, session } = args;
+  const { issueNumber, repoRoot, runDir, agent, session } = args;
   const issue = fetchIssue(issueNumber);
   if (issue.state !== 'OPEN') {
     throw new Error(`Issue #${String(issueNumber)} is ${issue.state}; refusing to run.`);
@@ -234,22 +251,23 @@ async function runImplementerTarget(args: {
   await mkdir(runDir, { recursive: true });
   await writeFile(promptPath, prompt, 'utf8');
 
-  const transcriptDir = path.join(
-    homedir(),
-    '.claude',
-    'projects',
-    paths.worktreePath.replaceAll('/', '-'),
-  );
+  const transcriptHint = codingAgentTranscriptHint({
+    agent,
+    worktreePath: paths.worktreePath,
+    homeDir: homedir(),
+  });
 
   process.stdout.write(
     `\n-> launching implementer in ${path.relative(repoRoot, paths.worktreePath)} (branch ${paths.branch})\n` +
+      `  agent: ${agent}\n` +
       `  prompt: ${path.relative(repoRoot, promptPath)}\n` +
       `  tmux: session '${session}', pane 'i-${String(issueNumber)}'\n` +
-      `  transcript: ${transcriptDir}/<session>.jsonl\n\n`,
+      (transcriptHint === null ? '\n' : `  transcript: ${transcriptHint}\n\n`),
   );
 
-  await runImplementerClaudeInTmux({
+  await runImplementerAgentInTmux({
     session,
+    agent,
     issueNumber,
     branch: paths.branch,
     cwd: paths.worktreePath,
@@ -277,14 +295,15 @@ async function runImplementerTarget(args: {
   return 'pr-opened';
 }
 
-function runImplementerClaudeInTmux(args: {
+function runImplementerAgentInTmux(args: {
   session: string;
+  agent: CodingAgent;
   issueNumber: number;
   branch: string;
   cwd: string;
   promptPath: string;
 }): Promise<void> {
-  const { session, issueNumber, branch, cwd, promptPath } = args;
+  const { session, agent, issueNumber, branch, cwd, promptPath } = args;
   const channel = `klaus-issue-${String(issueNumber)}`;
   const paneTitle = `i-${String(issueNumber)}`;
 
@@ -295,7 +314,7 @@ function runImplementerClaudeInTmux(args: {
     `KLAUS_PANE_TITLE=${shellQuote(paneTitle)} ` +
     `KLAUS_RUN_DIR=${shellQuote(path.dirname(promptPath))} ` +
     `KLAUS_TMUX_PANE="$(tmux display-message -p '#{pane_id}')" ` +
-    `claude "$(cat ${shellQuote(promptPath)})"; ` +
+    `${buildCodingAgentPromptCommand({ agent, promptPath })}; ` +
     `tmux wait-for -S ${channel}; exec zsh`;
 
   const paneId = newAgentPane({
@@ -381,9 +400,11 @@ export function printImplementerPlan(args: {
   skipped: readonly { number: number; reason: string }[];
   blocked: readonly BlockedIssue[];
   parallel: number;
+  agent: CodingAgent;
 }): void {
   process.stdout.write(
-    `\nImplement plan (milestone: ${args.milestone}, parallel: ${String(args.parallel)})\n`,
+    `\nImplement plan ` +
+      `(milestone: ${args.milestone}, parallel: ${String(args.parallel)}, agent: ${args.agent})\n`,
   );
   if (args.dispatch.length > 0) {
     process.stdout.write('  Dispatch order:\n');
@@ -413,11 +434,13 @@ export function formatImplementerControlHeader(args: {
   skipped: readonly { number: number; reason: string }[];
   blocked: readonly BlockedIssue[];
   parallel: number;
+  agent: CodingAgent;
 }): string {
   const lines: string[] = [];
   lines.push(`klaus implementer @ ${new Date().toISOString()}`);
   lines.push(`milestone: ${args.milestone}`);
   lines.push(`parallel: ${String(args.parallel)}`);
+  lines.push(`agent: ${args.agent}`);
   lines.push('');
   lines.push('dispatch:');
   for (const i of args.dispatch) lines.push(`  #${String(i.number)} ${i.title}`);

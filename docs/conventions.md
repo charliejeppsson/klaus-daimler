@@ -6,6 +6,7 @@ These conventions apply when changing `klaus-daimler` itself. They are intention
 
 - Prefer the workflow-first source structure over adding generic architectural layers.
 - Let `CONTEXT.md`, `ARCHITECTURE.md`, and relevant ADRs set the vocabulary and boundaries.
+- Do not estimate effort in human development time such as hours, days, or weeks. Klaus is built for coding-agent workflows, so size work in terms of agent runs, affected boundaries, risk, verification scope, and expected iteration count instead.
 - Comments should explain hidden constraints, external tool quirks, or non-obvious trade-offs. Do not comment obvious control flow.
 
 ## TypeScript

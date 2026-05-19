@@ -393,10 +393,6 @@ export function collectReviewTargets(args: {
       skipped.push({ number: issue.number, reason: `no PR for ${paths.branch}` });
       continue;
     }
-    if (pr.state !== 'OPEN') {
-      skipped.push({ number: issue.number, reason: `PR #${String(pr.number)} is ${pr.state}` });
-      continue;
-    }
     const reviewPaths = pathsForReview(
       args.repoRoot,
       pr.number,

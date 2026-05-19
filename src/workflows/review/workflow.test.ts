@@ -55,40 +55,6 @@ describe('collectReviewTargets', () => {
     expect(plan.skipped).toEqual([{ number: 11, reason: 'no PR for agent/issue-11-example-issue' }]);
   });
 
-  it('skips closed PRs', () => {
-    const plan = collectReviewTargets({
-      repoRoot: '/repo',
-      issues: [issue],
-      findPrForBranch: vi.fn().mockReturnValue({
-        number: 123,
-        state: 'CLOSED',
-        url: 'https://github.com/example/repo/pull/123',
-        isDraft: false,
-      }),
-      worktreeExists: vi.fn().mockReturnValue(false),
-    });
-
-    expect(plan.targets).toEqual([]);
-    expect(plan.skipped).toEqual([{ number: 11, reason: 'PR #123 is CLOSED' }]);
-  });
-
-  it('skips merged PRs', () => {
-    const plan = collectReviewTargets({
-      repoRoot: '/repo',
-      issues: [issue],
-      findPrForBranch: vi.fn().mockReturnValue({
-        number: 123,
-        state: 'MERGED',
-        url: 'https://github.com/example/repo/pull/123',
-        isDraft: false,
-      }),
-      worktreeExists: vi.fn().mockReturnValue(false),
-    });
-
-    expect(plan.targets).toEqual([]);
-    expect(plan.skipped).toEqual([{ number: 11, reason: 'PR #123 is MERGED' }]);
-  });
-
   it('refuses targets whose review worktree already exists', () => {
     const plan = collectReviewTargets({
       repoRoot: '/repo',

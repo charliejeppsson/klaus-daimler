@@ -154,9 +154,12 @@ export function listMilestoneIssues(milestone: string, label: string): readonly 
 }
 
 export function findPrForBranch(branch: string): PullRequest | null {
+  // Filter to OPEN PRs: a stale CLOSED PR on the same branch name must not be
+  // mistaken for a freshly-opened one by the implementer poll. Merged PRs are
+  // handled separately via listMergedAgentPrs and the worktree-cleanup path.
   const result = spawnSync(
     'gh',
-    ['pr', 'list', '--head', branch, '--state', 'all', '--json', 'number,state,url,isDraft'],
+    ['pr', 'list', '--head', branch, '--state', 'open', '--json', 'number,state,url,isDraft'],
     { encoding: 'utf8' },
   );
   if (result.status !== 0) {

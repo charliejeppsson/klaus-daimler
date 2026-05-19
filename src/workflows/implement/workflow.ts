@@ -123,7 +123,7 @@ export async function runImplementerWorkflow(
     }
     const paths = pathsForIssue(repoRoot, issue.number, issue.title);
     const pr = findPrForBranch(paths.branch);
-    if (pr !== null && pr.state === 'OPEN') {
+    if (pr !== null) {
       skipped.push({ number: issue.number, reason: `open PR #${String(pr.number)}` });
       continue;
     }
